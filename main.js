@@ -8,6 +8,10 @@ let seedBlock = false;
 
 const client = new qBittorrentClient(process.env.QBIT_HOST, process.env.QBIT_USER, process.env.QBIT_PASSWORD);
 
+const log = (msg) => {
+    console.log(`${new Date().toISOString()}: ${msg}`)
+}
+
 const main = async () => {
     const wsc = new WebSocket(`${process.env.EMBY_HOST}/embywebsocket?api_key=${process.env.EMBY_API_KEY}`);
 
@@ -52,10 +56,6 @@ const main = async () => {
     wsc.on('error', (error) => {
         log(`Websocket error: ${error.code}`);
     });
-}
-
-const log = (msg) => {
-    console.log(`${new Date().toISOString()}: ${msg}`)
 }
 
 main();
