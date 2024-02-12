@@ -2,15 +2,9 @@ const { qBittorrentClient } = require('@robertklep/qbittorrent');
 const ip = require('ip');
 const { WebSocket } = require('ws');
 
-log('Starting application...');
-
 let seedBlock = false;
-
+const log = (msg) => console.log(`${new Date().toISOString()}: ${msg}`);
 const client = new qBittorrentClient(process.env.QBIT_HOST, process.env.QBIT_USER, process.env.QBIT_PASSWORD);
-
-const log = (msg) => {
-    console.log(`${new Date().toISOString()}: ${msg}`)
-}
 
 const main = async () => {
     const wsc = new WebSocket(`${process.env.EMBY_HOST}/embywebsocket?api_key=${process.env.EMBY_API_KEY}`);
@@ -57,5 +51,7 @@ const main = async () => {
         log(`Websocket error: ${error.code}`);
     });
 }
+
+log('Starting application...');
 
 main();
