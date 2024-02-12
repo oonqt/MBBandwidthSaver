@@ -2,7 +2,7 @@ const { qBittorrentClient } = require('@robertklep/qbittorrent');
 const ip = require('ip');
 const { WebSocket } = require('ws');
 
-console.log('Starting application...');
+log('Starting application...');
 
 let seedBlock = false;
 
@@ -12,10 +12,9 @@ const main = async () => {
     const wsc = new WebSocket(`${process.env.EMBY_HOST}/embywebsocket?api_key=${process.env.EMBY_API_KEY}`);
 
     wsc.on('open', () => {
-        console.log('Connected to Emby websocket');
+        log('Connected to Emby websocket');
 
-        wsc.send(JSON.stringify({MessageType: "SessionsStart", Data: "0,500"}));
-
+        wsc.send(JSON.stringify({ MessageType: "SessionsStart", Data: "0,500" }));
     });
 
     wsc.on('message', async (data) => {
@@ -24,24 +23,24 @@ const main = async () => {
         hasRemoteSession = false;
 
         for (const session of Data) {
-            if(session.NowPlayingItem && !ip.cidrSubnet(process.env.LOCAL_SUBNET).contains(session.RemoteEndPoint) && !ip.isLoopback(session.RemoteEndPoint)) hasRemoteSession = true;
+            if (session.NowPlayingItem && !ip.cidrSubnet(process.env.LOCAL_SUBNET).contains(session.RemoteEndPoint) && !ip.isLoopback(session.RemoteEndPoint)) hasRemoteSession = true;
         }
 
         if (hasRemoteSession && !seedBlock) {
-            console.log('Remote session detected, enabling seedblock');
+            log('Remote session detected, enabling seedblock');
 
-            await client.transfer.setUploadLimit(1).then(() => seedBlock = true).catch(console.error);
+            await client.transfer.setUploadLimit(1).then(() => seedBlock = true).catch(log);
 
             seedBlock = true;
         } else if (!hasRemoteSession && seedBlock) {
-            console.log('All remote sessions closed, disabling seedblock');
+            log('All remote sessions closed, disabling seedblock');
 
-            await client.transfer.setUploadLimit(0).then(() => seedBlock = false).catch(console.error);
+            await client.transfer.setUploadLimit(0).then(() => seedBlock = false).catch(log);
         }
     });
 
     wsc.on('close', () => {
-        console.log('Websocket connection interrupted. Closing current socket. Will attempt to reconnect in a few seconds');
+        log('Websocket connection interrupted. Closing current socket. Will attempt to reconnect in a few seconds');
 
         wsc.close();
 
@@ -51,8 +50,12 @@ const main = async () => {
     });
 
     wsc.on('error', (error) => {
-        console.log(`Websocket error: ${error.code}`);
+        log(`Websocket error: ${error.code}`);
     });
+}
+
+const log = (msg) => {
+    console.log(`${new Date().toISOString()}: ${msg}`)
 }
 
 main();
