@@ -1,6 +1,6 @@
 {
   "name": "mbbandwidthsaver",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Temporarily stops seeding of all torrents whenever a remote stream is playing on Emby.",
   "main": "main.js",
   "scripts": {
