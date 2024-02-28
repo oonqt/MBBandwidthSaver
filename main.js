@@ -4,7 +4,7 @@ const { WebSocket } = require('ws');
 
 let seedBlock = false;
 const log = (msg) => console.log(`${new Date().toISOString()}: ${msg}`);
-const client = new qBittorrentClient(process.env.QBIT_HOST, process.env.QBIT_USER, process.env.QBIT_PASSWORD);
+const client = new qBittorrentClient(process.env.QBIT_HOST, process.env.QBIT_USER, process.env.QBIT_PASS);
 
 const main = async () => {
     const wsc = new WebSocket(`${process.env.EMBY_HOST}/embywebsocket?api_key=${process.env.EMBY_API_KEY}`);
@@ -15,7 +15,13 @@ const main = async () => {
         wsc.send(JSON.stringify({ MessageType: "SessionsStart", Data: "0,500" }));
     });
 
+
+    let debounce = false;
+    
     wsc.on('message', async (data) => {
+        if (debounce) return;
+        debounce = true;
+
         const { Data } = JSON.parse(data);
 
         hasRemoteSession = false;
@@ -35,6 +41,8 @@ const main = async () => {
 
             await client.transfer.setUploadLimit(0).then(() => seedBlock = false).catch(log);
         }
+
+        debounce = false;
     });
 
     wsc.on('close', () => {
