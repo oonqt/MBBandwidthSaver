@@ -15,16 +15,11 @@ const main = async () => {
         wsc.send(JSON.stringify({ MessageType: "SessionsStart", Data: "0,500" }));
     });
 
-
-    let debounce = false;
     
     wsc.on('message', async (data) => {
-        if (debounce) return;
-        debounce = true;
-
         const { Data } = JSON.parse(data);
 
-        hasRemoteSession = false;
+        let hasRemoteSession = false;
 
         for (const session of Data) {
             if (session.NowPlayingItem && !ip.cidrSubnet(process.env.LOCAL_SUBNET).contains(session.RemoteEndPoint) && !ip.isLoopback(session.RemoteEndPoint)) hasRemoteSession = true;
@@ -33,16 +28,17 @@ const main = async () => {
         if (hasRemoteSession && !seedBlock) {
             log('Remote session detected, enabling seedblock');
 
-            await client.transfer.setUploadLimit(1).then(() => seedBlock = true).catch(log);
-
             seedBlock = true;
+
+            await client.transfer.setUploadLimit(1).then(() => seedBlock = true).catch((err) => {
+                log(err);
+                seedBlock = false;
+            });
         } else if (!hasRemoteSession && seedBlock) {
             log('All remote sessions closed, disabling seedblock');
 
             await client.transfer.setUploadLimit(0).then(() => seedBlock = false).catch(log);
         }
-
-        debounce = false;
     });
 
     wsc.on('close', () => {
