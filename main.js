@@ -2,11 +2,13 @@ const { qBittorrentClient } = require('@robertklep/qbittorrent');
 const ip = require('ip');
 const { WebSocket } = require('ws');
 
-let seedBlock = false;
 const log = (msg) => console.log(`${new Date().toISOString()}: ${msg}`);
-const client = new qBittorrentClient(process.env.QBIT_HOST, process.env.QBIT_USER, process.env.QBIT_PASS);
 
 const main = async () => {
+    let seedBlock = false;
+    const client = new qBittorrentClient(process.env.QBIT_HOST);
+    await client.auth.login(process.env.QBIT_USER, process.env.QBIT_PASS);
+
     const wsc = new WebSocket(`${process.env.EMBY_HOST}/embywebsocket?api_key=${process.env.EMBY_API_KEY}`);
 
     wsc.on('open', () => {
@@ -30,19 +32,35 @@ const main = async () => {
 
             seedBlock = true;
 
-            await client.transfer.setUploadLimit(1).then(() => seedBlock = true).catch((err) => {
+            try {
+                await client.transfer.setUploadLimit(1)
+            } catch(err) {
                 log(err);
                 seedBlock = false;
-            });
+            }
         } else if (!hasRemoteSession && seedBlock) {
             log('All remote sessions closed, disabling seedblock');
 
-            await client.transfer.setUploadLimit(0).then(() => seedBlock = false).catch(log);
+            try {
+                await client.transfer.setUploadLimit(0);
+                seedBlock = false;
+            } catch (err) {
+                log(err);
+            }
         }
     });
 
-    wsc.on('close', () => {
-        log('Websocket connection interrupted. Closing current socket. Will attempt to reconnect in a few seconds');
+    wsc.on('close', async () => {
+        log('Websocket connection interrupted. Closing current socket, disabling seedblock Will attempt to reconnect in a few seconds');
+        
+        if (seedBlock) {
+            try {
+                await client.transfer.setUploadLimit(0);
+                seedBlock = false;
+            } catch (err) {
+                log(err);
+            }
+        }
 
         wsc.close();
 
