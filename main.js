@@ -6,8 +6,7 @@ const log = (msg) => console.log(`${new Date().toISOString()}: ${msg}`);
 
 const main = async () => {
     let seedBlock = false;
-    const client = new qBittorrentClient(process.env.QBIT_HOST);
-    await client.auth.login(process.env.QBIT_USER, process.env.QBIT_PASS);
+    const client = new qBittorrentClient(process.env.QBIT_HOST, process.env.QBIT_USER, process.env.QBIT_PASS);
 
     const wsc = new WebSocket(`${process.env.EMBY_HOST}/embywebsocket?api_key=${process.env.EMBY_API_KEY}`);
 
