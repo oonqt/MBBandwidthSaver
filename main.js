@@ -1,8 +1,16 @@
 const { qBittorrentClient } = require('@robertklep/qbittorrent');
 const ip = require('ip');
 const { WebSocket } = require('ws');
+const Logger = require('./logger');
+const { version } = require('./package.json');
 
-const log = (msg) => console.log(`${new Date().toISOString()}: ${msg}`);
+if (process.env.NODE_ENV === 'development') require('dotenv').config();
+
+const {
+
+} = process.env;
+
+const logger = new Logger('MBBandwidthSaver');
 
 const main = async () => {
     let seedBlock = false;
@@ -73,6 +81,6 @@ const main = async () => {
     });
 }
 
-log('Starting application...');
+logger.info(`Starting MBBandwidthSaver v${version}`);
 
 main();

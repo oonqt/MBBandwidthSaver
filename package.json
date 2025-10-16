@@ -1,17 +1,22 @@
 {
   "name": "mbbandwidthsaver",
-  "version": "1.0.2",
+  "version": "1.0.0",
   "description": "Temporarily stops seeding of all torrents whenever a remote stream is playing on Emby.",
   "main": "main.js",
   "scripts": {
-    "start": "node ."
+    "start": "node .",
+    "dev": "nodemon ."
   },
   "keywords": [],
-  "author": "",
+  "author": "rechigo",
   "license": "MIT",
   "dependencies": {
     "@robertklep/qbittorrent": "^1.0.1",
+    "env": "^0.0.2",
     "ip": "^1.1.8",
     "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "dotenv": "^17.2.3"
   }
 }
